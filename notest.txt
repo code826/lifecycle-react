@@ -1,0 +1,261 @@
+// what is lifecycle.
+// what is compoenent life cycle 
+// mounting updating unmounting error handling
+
+In React, the mounting lifecycle methods are part of the process when a component is first added to the DOM. They include methods that run from the initial creation of the component instance until the component is rendered for the first time.
+
+Here’s a breakdown of each of the main mounting lifecycle methods in React class components:
+
+1. constructor()
+Purpose: The constructor is called first, and it’s used for initializing the component’s state and binding any event handlers to the component instance.
+Usage: Typically, you use it to set the initial state (this.state) and bind methods to this if necessary.
+Example:
+javascript
+Copy code
+class MyComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { count: 0 };
+  }
+}
+2. static getDerivedStateFromProps(props, state)
+Purpose: This static method is rarely used but can update the state based on changes in props before rendering. It runs right after the constructor and before the initial render.
+Usage: It’s mostly used in scenarios where the component’s state depends on changes in props. It returns an object to update the state or null if no changes are needed.
+Example:
+javascript
+Copy code
+static getDerivedStateFromProps(props, state) {
+  if (props.initialCount !== state.count) {
+    return { count: props.initialCount };
+  }
+  return null;
+}
+3. render()
+Purpose: The render method is required in every class component. It defines what the component should output to the DOM.
+Usage: The render method should be pure, meaning it shouldn’t modify the component’s state or interact with the DOM directly. It returns the JSX structure to display.
+Example:
+javascript
+Copy code
+render() {
+  return <div>Count: {this.state.count}</div>;
+}
+4. componentDidMount()
+Purpose: This method is called immediately after the component is mounted to the DOM, making it a good place for side effects such as data fetching or setting up subscriptions.
+Usage: Often used to make API calls, start timers, or initialize subscriptions.
+Example:
+javascript
+Copy code
+componentDidMount() {
+  fetchData().then(data => this.setState({ data }));
+}
+Summary of Mounting Lifecycle Order:
+constructor()
+getDerivedStateFromProps()
+render()
+componentDidMount()
+The mounting phase concludes once componentDidMount has been called, and the component is now fully rendered on the page.
+
+
+Certainly! The updating lifecycle methods in React are called when a component is re-rendered due to changes in props or state. Here’s a breakdown of each updating lifecycle method in React class components:
+
+1. static getDerivedStateFromProps(props, state)
+Purpose: Just like in the mounting phase, this method is called during updates and allows the component to adjust its state in response to prop changes.
+Usage: It’s used rarely but can be helpful when the state needs to be recalculated based on new prop values. It returns an updated state object or null if there are no changes.
+Example:
+javascript
+Copy code
+static getDerivedStateFromProps(props, state) {
+  if (props.newValue !== state.value) {
+    return { value: props.newValue };
+  }
+  return null;
+}
+2. shouldComponentUpdate(nextProps, nextState)
+Purpose: This method determines whether the component should re-render in response to a state or prop change.
+Usage: Returning true means the component should re-render, while false prevents a re-render. This method is commonly used for performance optimization to avoid unnecessary renders.
+Example:
+javascript
+Copy code
+shouldComponentUpdate(nextProps, nextState) {
+  return nextProps.value !== this.props.value;
+}
+3. render()
+Purpose: The render method runs again during updates and generates the updated JSX based on the new state or props.
+Usage: It returns the JSX to be rendered. The render method should always be pure, meaning it shouldn’t trigger any side effects.
+Example:
+javascript
+Copy code
+render() {
+  return <div>Updated Value: {this.props.value}</div>;
+}
+4. getSnapshotBeforeUpdate(prevProps, prevState)
+Purpose: This method is rarely used but can capture information (e.g., the scroll position) just before changes are made to the DOM.
+Usage: It returns a value (like a snapshot of the component’s state) that is then passed as a parameter to componentDidUpdate. Useful for tracking and preserving the UI’s state.
+Example:
+javascript
+Copy code
+getSnapshotBeforeUpdate(prevProps, prevState) {
+  if (prevProps.list.length < this.props.list.length) {
+    return this.listRef.scrollHeight;
+  }
+  return null;
+}
+5. componentDidUpdate(prevProps, prevState, snapshot)
+Purpose: This method is called after the component re-renders and is a good place for side effects that depend on the latest DOM updates, like fetching new data based on updated props.
+Usage: Often used to update state based on new prop values, make API calls, or handle anything that requires the DOM to be up-to-date.
+Example:
+javascript
+Copy code
+componentDidUpdate(prevProps, prevState, snapshot) {
+  if (snapshot !== null) {
+    this.listRef.scrollTop = this.listRef.scrollHeight - snapshot;
+  }
+}
+Summary of Updating Lifecycle Order:
+getDerivedStateFromProps()
+shouldComponentUpdate()
+render()
+getSnapshotBeforeUpdate()
+componentDidUpdate()
+This completes the updating phase, with componentDidUpdate being the final method, which allows you to perform any necessary side effects after the component has re-rendered.
+
+The unmounting lifecycle in React happens when a component is removed from the DOM. This phase includes only one lifecycle method in class components:
+
+componentWillUnmount()
+Purpose: This method is called right before a component is removed from the DOM, making it ideal for cleanup tasks.
+Usage: It’s used to clean up any side effects created during the component’s lifecycle, such as:
+Clearing intervals, timeouts, or event listeners.
+Canceling API requests that may still be in progress.
+Unsubscribing from observables or data streams (e.g., WebSockets).
+Example:
+javascript
+Copy code
+class MyComponent extends React.Component {
+  componentDidMount() {
+    this.intervalId = setInterval(this.updateData, 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalId); // Clearing interval when component is removed
+  }
+
+  render() {
+    return <div>Component is active</div>;
+  }
+}
+In this example, componentWillUnmount is used to clear an interval set in componentDidMount. This ensures no unnecessary intervals continue running after the component is unmounted, which prevents memory leaks.
+
+function priceToRs(dollar){
+    const exchange = 80;
+    return exchange*80;
+}
+priceToRs(20) -> 1600
+
+const exchange = 10;
+priceToRsV2(20) --> 1600
+priceToRsV2(20) --> 800
+function priceToRsV2(dollar){
+ 
+    return exchange*80;
+}
+
+
+In React, an Error Boundary is a component designed to catch JavaScript errors in the component tree below it, log those errors, and display a fallback UI instead of crashing the application. This concept helps prevent the entire application from breaking due to errors in a specific part of the component tree.
+
+Key Points
+Error boundaries only catch errors during rendering, lifecycle methods, and constructors of child components.
+They do not catch errors inside event handlers.
+To implement an error boundary, you create a class component with the following lifecycle methods:
+
+static getDerivedStateFromError(error): Updates the state when an error occurs.
+componentDidCatch(error, info): Logs the error details for debugging.
+Example: Error Boundary Implementation
+Here’s a simple example:
+
+Step 1: Create an Error Boundary Component
+jsx
+Copy code
+import React, { Component } from 'react';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    // Update state to show fallback UI
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // Log error details (e.g., to an analytics service)
+    console.error("Error caught by Error Boundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Fallback UI
+      return <h1>Something went wrong.</h1>;
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+Step 2: Wrap the Application (or Specific Components)
+Wrap the component tree (or specific components) with the ErrorBoundary:
+
+jsx
+Copy code
+import React from 'react';
+import ErrorBoundary from './ErrorBoundary';
+import MyComponent from './MyComponent';
+
+function App() {
+  return (
+    <div>
+      <h1>My Application</h1>
+      <ErrorBoundary>
+        <MyComponent />
+      </ErrorBoundary>
+    </div>
+  );
+}
+
+export default App;
+Step 3: Create a Component that May Cause an Error
+jsx
+Copy code
+import React from 'react';
+
+function MyComponent() {
+  // Simulate an error
+  throw new Error('Simulated Error');
+  
+  return <div>This will not render.</div>;
+}
+
+export default MyComponent;
+What Happens?
+When MyComponent throws an error, the error boundary catches it.
+Instead of crashing the app, it renders the fallback UI: Something went wrong.
+Notes
+Best Practices:
+Use Error Boundaries sparingly. Wrap larger sections of your app or critical areas.
+Combine Error Boundaries with proper error logging and monitoring.
+Limitations:
+They do not handle errors in event handlers. For example:
+
+jsx
+Copy code
+function handleClick() {
+  throw new Error("This won't be caught by an Error Boundary");
+}
+You need to use try-catch blocks for such cases.
+
+static getDerivedStateFromError()
+  
+//getDerivedStateFromError
+//getDerivedStateFromError
